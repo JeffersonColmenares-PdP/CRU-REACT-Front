@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 const Paises = () => {
   const navegar = useNavigate();
-
   return (
     <>
       <h1>Paises</h1>
@@ -14,6 +13,9 @@ const Paises = () => {
             <img
               src="https://img.freepik.com/vector-gratis/todas-banderas-paises-eurocopa_1057-1259.jpg"
               alt="Paises"
+              onClick={() => {
+                navegar("/tabla-paises");
+              }}
             />
             <h2 className="titulo-botones">Paises</h2>
           </div>
@@ -21,6 +23,9 @@ const Paises = () => {
             <img
               src="https://applicantes.com/wp-content/uploads/2018/06/apps-traducciones-768x403.jpg"
               alt="Traducción Nombre Pais"
+              onClick={() => {
+                navegar("/tabla-traduccion-paises");
+              }}
             />
             <h2 className="titulo-botones">Traducción Nombre Pais</h2>
           </div>
@@ -33,7 +38,14 @@ const Paises = () => {
           </div>
         </div>
       </div>
-      <button className="volver" onClick={() => {navegar("/")}}>Regresar Página Principal</button>
+      <button
+        className="volver"
+        onClick={() => {
+          navegar("/");
+        }}
+      >
+        Regresar Página Principal
+      </button>
     </>
   );
 };
