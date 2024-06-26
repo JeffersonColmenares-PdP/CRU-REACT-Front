@@ -166,7 +166,7 @@ const TablaPaises = () => {
             <input value={inputPoblacion} onChange={(e) => setInputPoblacion(e.target.value)} />
             <div className="button-acciones">
               <button onClick={() => {fetchActualizarPaises()}}>Actualizar</button>
-              <button onClick={() => {setModal(false)}}>Anterior</button>
+              <button onClick={() => {setModal(false)}}>Cerrar</button>
             </div>
           </div>
         )}

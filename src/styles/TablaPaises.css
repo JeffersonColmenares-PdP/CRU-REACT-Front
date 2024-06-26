@@ -141,3 +141,42 @@
     font-size: 40px;
     font-weight: bold;
 }
+
+.modal-actualizar {
+    background-color: #f87b78;
+    width: 80%;
+    height: 90vh;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+}
+
+.modal-actualizar input {
+    margin-bottom: 10px;
+    width: 80%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.modal-actualizar label {
+    margin-top: 10px;
+}
+
+.modal-actualizar h3 {
+    font-size: 40px;
+}
+
+.modal-actualizar button {
+    margin-top: 10px;
+}
+
+.button-acciones {
+    display: flex;
+    gap: 50px;
+    justify-content: space-between;
+}
