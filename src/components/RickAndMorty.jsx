@@ -14,6 +14,9 @@ const RickAndMorty = () => {
             <img
               src="https://repository-images.githubusercontent.com/285645728/409e5900-1a2a-11eb-840d-33df83f42cfe"
               alt="Personajes"
+              onClick={() => {
+                navegar("/tabla-personajes");
+              }}
             />
             <h2 className="titulo-botones">Personajes</h2>
           </div>

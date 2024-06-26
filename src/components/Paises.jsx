@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/Paises.css";
 import { useNavigate } from "react-router-dom";
 
@@ -33,8 +32,21 @@ const Paises = () => {
             <img
               src="https://respaldobe.wipudicreativos.com/wp-content/uploads/2020/05/fronteras_impresionantes_del_mundo.jpg"
               alt="Fronteras"
+              onClick={() => {
+                navegar("/tabla-fronteras");
+              }}
             />
             <h2 className="titulo-botones">Fronteras</h2>
+          </div>
+          <div className="fronteras">
+            <img
+              src="https://www.lavanguardia.com/files/og_thumbnail/uploads/2018/06/15/5fa43d71a111f.jpeg"
+              alt="Uniones"
+              onClick={() => {
+                navegar("/tabla-uniones");
+              }}
+            />
+            <h2 className="titulo-botones">Unión País - Frontera</h2>
           </div>
         </div>
       </div>

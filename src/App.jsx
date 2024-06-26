@@ -10,6 +10,7 @@ import TablaFronteras from "./components/TablaFronteras";
 import TablaEspecies from "./components/TablaEspecies";
 import TablaPersonajes from "./components/TablaPersonajes";
 import TablaPaisPersonaje from "./components/TablaPaisPersonaje";
+import TablaUnionPaisFrontera from "./components/TablaUnionPaisFrontera";
 
 function App() {
   const navegar = useNavigate();
@@ -30,6 +31,7 @@ function App() {
         <Route path="/tabla-personajes" element={<TablaPersonajes />} />
         <Route path="/tabla-especies" element={<TablaEspecies />} />
         <Route path="/tabla-pais-personaje" element={<TablaPaisPersonaje />} />
+        <Route path="/tabla-uniones" element={<TablaUnionPaisFrontera />} />
       </Routes>
     </>
   )
