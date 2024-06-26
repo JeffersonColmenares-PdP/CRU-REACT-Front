@@ -1,19 +1,28 @@
-import React from "react";
 import { useEffect, useState } from "react";
 import "../styles/TablaPaises.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";//Para navegar entre rutas del front
+import { ToastContainer, toast } from 'react-toastify';//Para mensaje notificacion flotante
+import 'react-toastify/dist/ReactToastify.css';//Para mensaje notificacion flotante
 
 const TablaPaises = () => {
   const navegar = useNavigate();
   const [listPaises, setListPaises] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const PaisesPerPage = 5;
+  const [inputArea, setInputArea] = useState("");
+  const [inputCapital, setInputCapital] = useState("");
+  const [inputContinente, setInputContinente] = useState("");
+  const [inputPais, setInputPais] = useState("");
+  const [inputNombrePais, setInputNombrePais] = useState("");
+  const [inputPoblacion, setInputPoblacion] = useState("");
+  const [modal, setModal] = useState(false);
 
-  const fetchMostrarPaises = async () => {
+  //Para mostrar paises
+  const fetchMostrarPaises = async (page, pageSize) => {
     try {
       let PaisesDetalles = [];
       const infPaises = await fetch(
-        `http://127.0.0.1:5000/servicio-2/paises-espanol`
+        `http://127.0.0.1:5000/servicio-2/paises-espanol?page=${page}&page_size=${pageSize}`
       );
       if (infPaises.ok) {
         let infPaisesJs = await infPaises.json();
@@ -36,27 +45,73 @@ const TablaPaises = () => {
   };
 
   useEffect(() => {
-    fetchMostrarPaises();
-  }, []);
+    fetchMostrarPaises(currentPage, PaisesPerPage);
+  }, [currentPage]);
 
-  const indexOfLastPaises = currentPage * PaisesPerPage; // último Paises en página
-  const indexOfFirstPaises = indexOfLastPaises - PaisesPerPage; // primer Paises en página
-  const currentPaises = listPaises.slice(indexOfFirstPaises, indexOfLastPaises); // nuevo arreglo con Pais x pag
-
+  //Para nueva pagina
   const nextPage = () => {
-    if (currentPage < Math.ceil(listPaises.length / PaisesPerPage)) {
-      setCurrentPage(currentPage + 1);
+    if (listPaises.length === PaisesPerPage) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      fetchMostrarPaises(newPage, PaisesPerPage);
     }
   };
 
+  //Para establecer pagina anterior
   const prevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      fetchMostrarPaises(newPage, PaisesPerPage);
+    }
+  };
+
+  // Guarda información en los input - cualquier modificacion que se haga
+  const guardarInput = async (id_paises) => {
+    const datos = listPaises?.filter((id) => id.id_paises === id_paises);//Busca por id_paises la información en el listado de paises
+    setInputPais(datos[0]?.id_paises);
+    setInputNombrePais(datos[0]?.nombre_paises);
+    setInputCapital(datos[0]?.capital);
+    setInputContinente(datos[0]?.continente);
+    setInputArea(datos[0]?.area_km);
+    setInputPoblacion(datos[0]?.poblacion);
+    setModal(true);
+  };
+
+  // Toma la información que hay en los input y la envia a la funcion PUT para actualizar los paises
+  const fetchActualizarPaises = async () => {
+    try {
+      const infPaises = await fetch(
+        "http://127.0.0.1:5000/servicio-2/paises-espanol",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id_paises: inputPais,
+            area_km: inputArea,
+            capital: inputCapital,
+            continente: inputContinente,
+            nombre_paises: inputNombrePais,
+            poblacion: inputPoblacion,
+          }),
+        }
+      );
+      if (infPaises.ok) {
+        let infPaisesJs = await infPaises.json();
+        setModal(false);
+        toast.success(infPaisesJs?.msg, {
+          position: "top-center",
+        });
+        fetchMostrarPaises(currentPage, PaisesPerPage);
+      }
+    } catch (error) {
+      console.log("El error es: ", error);
     }
   };
 
   return (
     <>
+      <ToastContainer />
       <div className="container">
         <h2 className="titulo-tablaPaises">Paises</h2>
         <div className="table-container">
@@ -73,45 +128,48 @@ const TablaPaises = () => {
               </tr>
             </thead>
             <tbody>
-              {currentPaises.map((item, id) => (
-                <>
-                  <tr key={id}>
-                    <td>{item.id_paises}</td>
-                    <td>{item.nombre_paises}</td>
-                    <td>{item.capital}</td>
-                    <td>{item.continente}</td>
-                    <td>{item.area_km}</td>
-                    <td>{item.poblacion}</td>
-                    <td style={{ display: "flex", gap: "10px" }}>
-                      <button>Actualizar</button>
-                    </td>
-                  </tr>
-                </>
+              {listPaises.map((item, id) => (
+                <tr key={id}>
+                  <td>{item.id_paises}</td>
+                  <td>{item.nombre_paises}</td>
+                  <td>{item.capital}</td>
+                  <td>{item.continente}</td>
+                  <td>{item.area_km}</td>
+                  <td>{item.poblacion}</td>
+                  <td style={{ display: "flex", gap: "10px" }}>
+                    <button onClick={() => guardarInput(item.id_paises)}>Actualizar</button>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
         </div>
-
         <div>
-          <button onClick={prevPage} disabled={currentPage === 1}>
-            Anterior
-          </button>
-          <button
-            onClick={nextPage}
-            disabled={
-              currentPage === Math.ceil(listPaises.length / PaisesPerPage)
-            }
-          >
-            Siguiente
-          </button>
-          <button
-            onClick={() => {
-              navegar("/paises");
-            }}
-          >
-            Volver
-          </button>
+          <button onClick={prevPage} disabled={currentPage === 1}>Anterior</button>
+          <button onClick={nextPage} disabled={listPaises.length < PaisesPerPage}>Siguiente</button>
+          <button onClick={() => {navegar("/paises");}}>Volver</button>
         </div>
+        {modal && (
+          <div className="modal-actualizar">
+            <h3>Actualizar País</h3>
+            <label>ID País</label>
+            <input value={inputPais} disabled />
+            <label>Nombre</label>
+            <input value={inputNombrePais} onChange={(e) => setInputNombrePais(e.target.value)} />
+            <label>Capital</label>
+            <input value={inputCapital} onChange={(e) => setInputCapital(e.target.value)} />
+            <label>Continente</label>
+            <input value={inputContinente} onChange={(e) => setInputContinente(e.target.value)} />
+            <label>Área</label>
+            <input value={inputArea} onChange={(e) => setInputArea(e.target.value)} />
+            <label>Población</label>
+            <input value={inputPoblacion} onChange={(e) => setInputPoblacion(e.target.value)} />
+            <div className="button-acciones">
+              <button onClick={() => {fetchActualizarPaises()}}>Actualizar</button>
+              <button onClick={() => {setModal(false)}}>Anterior</button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
