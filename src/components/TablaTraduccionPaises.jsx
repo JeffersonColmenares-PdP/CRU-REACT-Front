@@ -7,8 +7,10 @@ import 'react-toastify/dist/ReactToastify.css';//Para mensaje notificacion flota
 const TablaTraduccionPaises = () => {
   const navegar = useNavigate();
   const [listPaises, setListPaises] = useState([]);
+  const [totalPaises, setTotalPaises] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const PaisesPerPage = 5;
+  const [paisesPerPage, setPaisesPerPage] = useState(5);
+  // const paisesPerPage = 5;
   const [inputTraduccion, setInputTraduccion] = useState("");
   const [inputPais, setInputPais] = useState("");
   const [inputIdioma, setInputIdioma] = useState("");
@@ -26,7 +28,7 @@ const TablaTraduccionPaises = () => {
       );
       if (infPaises.ok) {
         let infPaisesJs = await infPaises.json();
-        const resultPais = infPaisesJs?.obj;
+        const resultPais = infPaisesJs?.obj?.objeto_pais_espanol;
         for (let Pais of resultPais) {
           PaisesDetalles.push({
             id_traduccion: Pais?.id_traduccion,
@@ -37,6 +39,7 @@ const TablaTraduccionPaises = () => {
           });
         }
         setListPaises(PaisesDetalles);
+        setTotalPaises(infPaisesJs?.obj?.total || 0); // Actualiza el total de países
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -44,15 +47,14 @@ const TablaTraduccionPaises = () => {
   };
 
   useEffect(() => {
-    fetchMostrarPaises(currentPage, PaisesPerPage);
-  }, [currentPage]);
+    fetchMostrarPaises(currentPage, paisesPerPage);
+  }, [currentPage, paisesPerPage]);
 
   //Para nueva pagina
   const nextPage = () => {
-    if (listPaises.length === PaisesPerPage) {
+    if (listPaises.length === paisesPerPage) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
-      fetchMostrarPaises(newPage, PaisesPerPage);
     }
   };
 
@@ -61,49 +63,55 @@ const TablaTraduccionPaises = () => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
-      fetchMostrarPaises(newPage, PaisesPerPage);
     }
   };
 
-    // Guarda información en los input - cualquier modificacion que se haga
-    const guardarInput = async (id_traduccion) => {
-      const datos = listPaises?.filter((id) => id.id_traduccion === id_traduccion);//Busca por id_paises la información en el listado de paises
-      setInputTraduccion(datos[0]?.id_traduccion);
-      setInputPais(datos[0]?.nombre_paises);
-      setInputIdioma(datos[0]?.nombre_idioma);
-      setInputComun(datos[0]?.traduccion_comun);
-      setInputOficial(datos[0]?.traduccion_oficial);
-      setModal(true);
-    };
+  // Cambiar cantidad de registros por página
+  const registrosPorPagina = (e) => {
+    const cantidad = parseInt(e.target.value);
+    setPaisesPerPage(cantidad);
+    setCurrentPage(1); //Actualiza a 1 para que vuelva a la pagina principal
+  };
+
+  // Guarda información en los input - cualquier modificacion que se haga
+  const guardarInput = async (id_traduccion) => {
+    const datos = listPaises?.filter((id) => id.id_traduccion === id_traduccion);//Busca por id_paises la información en el listado de paises
+    setInputTraduccion(datos[0]?.id_traduccion);
+    setInputPais(datos[0]?.nombre_paises);
+    setInputIdioma(datos[0]?.nombre_idioma);
+    setInputComun(datos[0]?.traduccion_comun);
+    setInputOficial(datos[0]?.traduccion_oficial);
+    setModal(true);
+  };
   
-    // Toma la información que hay en los input y la envia a la funcion PUT para actualizar los paises
-    const fetchActualizarPaises = async () => {
-      try {
-        const infPaises = await fetch(
-          "http://127.0.0.1:5000/servicio-2/nombre-pais-traducciones",
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id_traduccion: inputTraduccion,
-              nombre_idioma: inputIdioma,
-              traduccion_comun: inputComun,
-              traduccion_oficial: inputOficial,
-            }),
-          }
-        );
-        if (infPaises.ok) {
-          let infPaisesJs = await infPaises.json();
-          setModal(false);
-          toast.success(infPaisesJs?.msg, {
-            position: "top-center",
-          });
-          fetchMostrarPaises(currentPage, PaisesPerPage);
+  // Toma la información que hay en los input y la envia a la funcion PUT para actualizar los paises
+  const fetchActualizarPaises = async () => {
+    try {
+      const infPaises = await fetch(
+        "http://127.0.0.1:5000/servicio-2/nombre-pais-traducciones",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id_traduccion: inputTraduccion,
+            nombre_idioma: inputIdioma,
+            traduccion_comun: inputComun,
+            traduccion_oficial: inputOficial,
+          }),
         }
-      } catch (error) {
-        console.log("El error es: ", error);
+      );
+      if (infPaises.ok) {
+        let infPaisesJs = await infPaises.json();
+        setModal(false);
+        toast.success(infPaisesJs?.msg, {
+          position: "top-center",
+        });
+        fetchMostrarPaises(currentPage, paisesPerPage);
       }
-    };
+    } catch (error) {
+      console.log("El error es: ", error);
+    }
+  };
 
       // Limpiar los input por si tienen datos y abre el modal para crear nuevo país
   const limpiarInput = async () => {
@@ -145,7 +153,7 @@ const TablaTraduccionPaises = () => {
           });
         }
         setModalCrear(false);
-        fetchMostrarPaises(currentPage, PaisesPerPage);
+        fetchMostrarPaises(currentPage, paisesPerPage);
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -190,8 +198,16 @@ const TablaTraduccionPaises = () => {
         </div>
         <div>
           <button onClick={prevPage} disabled={currentPage === 1}>Anterior</button>
-          <button onClick={nextPage} disabled={listPaises.length < PaisesPerPage}>Siguiente</button>
+          <button onClick={nextPage} disabled={currentPage >= Math.ceil(totalPaises / paisesPerPage)}>Siguiente</button>
           <button onClick={() => {navegar("/paises");}}>Volver</button>
+        </div>
+        <div>
+          <label>Registros por página:</label>
+          <select value={paisesPerPage} onChange={registrosPorPagina}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
         </div>
         {modal && (
             <div className="modal-actualizar">

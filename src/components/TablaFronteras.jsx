@@ -7,8 +7,10 @@ import 'react-toastify/dist/ReactToastify.css';//Para mensaje notificacion flota
 const TablaFronteras = () => {
   const navegar = useNavigate();
   const [listFronteras, setlistFronteras] = useState([]);
+  const [totalPaises, setTotalPaises] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const FronterasPerPage = 5;
+  const [fronterasPerPage, setFronterasPerPage] = useState(5);
+  // const fronterasPerPage = 5;
   const [inputNombreFrontera, setInputNombreFrontera] = useState("");
   const [inputLongitudFrontera, setInputLongitudFrontera] = useState("");
   const [inputDescripcionFrontera, setInputDescripcionFrontera] = useState("");
@@ -26,7 +28,7 @@ const TablaFronteras = () => {
       );
       if (infFronteras.ok) {
         let infFronterasJs = await infFronteras.json();
-        const resultFrontera = infFronterasJs?.obj;
+        const resultFrontera = infFronterasJs?.obj?.objeto_pais_espanol;
         for (let Frontera of resultFrontera) {
           FronterasDetalles.push({
             id_frontera: Frontera?.id_frontera,
@@ -38,6 +40,7 @@ const TablaFronteras = () => {
           });
         }
         setlistFronteras(FronterasDetalles);
+        setTotalPaises(infFronterasJs?.obj?.total || 0); // Actualiza el total de países
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -45,15 +48,14 @@ const TablaFronteras = () => {
   };
 
   useEffect(() => {
-    fetchMostrarFronteras(currentPage, FronterasPerPage);
-  }, [currentPage]);
+    fetchMostrarFronteras(currentPage, fronterasPerPage);
+  }, [currentPage, fronterasPerPage]);
 
   //Para nueva pagina
   const nextPage = () => {
-    if (listFronteras.length === FronterasPerPage) {
+    if (listFronteras.length === fronterasPerPage) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
-      fetchMostrarFronteras(newPage, FronterasPerPage);
     }
   };
 
@@ -62,8 +64,14 @@ const TablaFronteras = () => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
-      fetchMostrarFronteras(newPage, FronterasPerPage);
     }
+  };
+
+  // Cambiar cantidad de registros por página
+  const registrosPorPagina = (e) => {
+    const cantidad = parseInt(e.target.value);
+    setFronterasPerPage(cantidad);
+    setCurrentPage(1); //Actualiza a 1 para que vuelva a la pagina principal
   };
 
   // Guarda información en los input
@@ -107,7 +115,7 @@ const TablaFronteras = () => {
           });
         }
         setModal(false);
-        fetchMostrarFronteras(currentPage, FronterasPerPage);
+        fetchMostrarFronteras(currentPage, fronterasPerPage);
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -154,7 +162,7 @@ const TablaFronteras = () => {
           });
         }
         setModalCrear(false);
-        fetchMostrarFronteras(currentPage, FronterasPerPage);
+        fetchMostrarFronteras(currentPage, fronterasPerPage);
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -197,8 +205,16 @@ const TablaFronteras = () => {
         </div>
         <div>
           <button onClick={prevPage} disabled={currentPage === 1}>Anterior</button>
-          <button onClick={nextPage} disabled={listFronteras.length < FronterasPerPage}>Siguiente</button>
+          <button onClick={nextPage} disabled={currentPage >= Math.ceil(totalPaises / fronterasPerPage)}>Siguiente</button>
           <button onClick={() => {navegar("/paises");}}>Volver</button>
+        </div>
+        <div>
+          <label>Registros por página:</label>
+          <select value={fronterasPerPage} onChange={registrosPorPagina}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
         </div>
         {modal && (
           <div className="modal-actualizar">

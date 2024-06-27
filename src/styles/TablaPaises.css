@@ -154,7 +154,8 @@
     border-radius: 15px;
 }
 
-.modal-actualizar input {
+.modal-actualizar input,
+.modal-actualizar select {
     margin-bottom: 10px;
     width: 80%;
     padding: 8px;
@@ -164,6 +165,10 @@
 }
 
 .modal-actualizar label {
+    margin-top: 10px;
+}
+
+.modal-actualizar .button-acciones {
     margin-top: 10px;
 }
 

@@ -7,8 +7,9 @@ import 'react-toastify/dist/ReactToastify.css';//Para mensaje notificacion flota
 const TablaPaises = () => {
   const navegar = useNavigate();
   const [listPaises, setListPaises] = useState([]);
+  const [totalPaises, setTotalPaises] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const PaisesPerPage = 5;
+  const [paisesPerPage, setPaisesPerPage] = useState(5);
   const [inputArea, setInputArea] = useState("");
   const [inputCapital, setInputCapital] = useState("");
   const [inputContinente, setInputContinente] = useState("");
@@ -27,7 +28,7 @@ const TablaPaises = () => {
       );
       if (infPaises.ok) {
         let infPaisesJs = await infPaises.json();
-        const resultPais = infPaisesJs?.obj;
+        const resultPais = infPaisesJs?.obj?.objeto_pais_espanol;
         for (let Pais of resultPais) {
           PaisesDetalles.push({
             id_paises: Pais?.id_paises,
@@ -39,6 +40,7 @@ const TablaPaises = () => {
           });
         }
         setListPaises(PaisesDetalles);
+        setTotalPaises(infPaisesJs?.obj?.total || 0); // Actualiza el total de países
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -46,15 +48,14 @@ const TablaPaises = () => {
   };
 
   useEffect(() => {
-    fetchMostrarPaises(currentPage, PaisesPerPage);
-  }, [currentPage]);
+    fetchMostrarPaises(currentPage, paisesPerPage);
+  }, [currentPage, paisesPerPage]);
 
   //Para nueva pagina
   const nextPage = () => {
-    if (listPaises.length === PaisesPerPage) {
+    if (listPaises.length === paisesPerPage) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
-      fetchMostrarPaises(newPage, PaisesPerPage);
     }
   };
 
@@ -63,8 +64,14 @@ const TablaPaises = () => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
-      fetchMostrarPaises(newPage, PaisesPerPage);
     }
+  };
+
+  // Cambiar cantidad de registros por página
+  const registrosPorPagina = (e) => {
+    const cantidad = parseInt(e.target.value);
+    setPaisesPerPage(cantidad);
+    setCurrentPage(1); //Actualiza a 1 para que vuelva a la pagina principal
   };
 
   // Guarda información en los input
@@ -110,7 +117,7 @@ const TablaPaises = () => {
           });
         }
         setModal(false);
-        fetchMostrarPaises(currentPage, PaisesPerPage);
+        fetchMostrarPaises(currentPage, paisesPerPage);
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -159,7 +166,7 @@ const TablaPaises = () => {
           });
         }
         setModalCrear(false);
-        fetchMostrarPaises(currentPage, PaisesPerPage);
+        fetchMostrarPaises(currentPage, paisesPerPage);
       }
     } catch (error) {
       console.log("El error es: ", error);
@@ -204,8 +211,16 @@ const TablaPaises = () => {
         </div>
         <div>
           <button onClick={prevPage} disabled={currentPage === 1}>Anterior</button>
-          <button onClick={nextPage} disabled={listPaises.length < PaisesPerPage}>Siguiente</button>
+          <button onClick={nextPage} disabled={currentPage >= Math.ceil(totalPaises / paisesPerPage)}>Siguiente</button>
           <button onClick={() => {navegar("/paises");}}>Volver</button>
+        </div>
+        <div>
+          <label>Registros por página:</label>
+          <select value={paisesPerPage} onChange={registrosPorPagina}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
         </div>
         {modal && (
           <div className="modal-actualizar">
